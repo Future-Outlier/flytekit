@@ -42,9 +42,12 @@ class SensorEngine(AgentBase):
         if inputs:
             native_inputs = TypeEngine.literal_map_to_kwargs(ctx, inputs, python_interface_inputs)
             task_template.custom[INPUTS] = native_inputs
+        print("@@@ Call the async_create function of SensorEngine")
+        print("@@@ task_template.custom: ", task_template.custom)
         return CreateTaskResponse(resource_meta=cloudpickle.dumps(task_template.custom))
 
     async def async_get(self, context: grpc.ServicerContext, resource_meta: bytes) -> GetTaskResponse:
+        print("@@@ Get the get function of SensorEngine")
         meta = cloudpickle.loads(resource_meta)
 
         sensor_module = importlib.import_module(name=meta[SENSOR_MODULE])
