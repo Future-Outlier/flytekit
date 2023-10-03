@@ -98,13 +98,12 @@ class AsyncAgentService(AsyncAgentServiceServicer):
             return await agent.async_create(
                 context=context, inputs=inputs, output_prefix=request.output_prefix, task_template=tmp
             )
-        return await asyncio.get_running_loop().run_in_executor(
-            None,
+        return await asyncio.to_thread(
             agent.create,
-            context,
-            request.output_prefix,
-            tmp,
-            inputs,
+            context=context,
+            inputs=inputs,
+            output_prefix=request.output_prefix,
+            task_template=tmp,
         )
 
     @agent_exception_handler
@@ -113,7 +112,7 @@ class AsyncAgentService(AsyncAgentServiceServicer):
         logger.info(f"{agent.task_type} agent start checking the status of the job")
         if agent.asynchronous:
             return await agent.async_get(context=context, resource_meta=request.resource_meta)
-        return await asyncio.get_running_loop().run_in_executor(None, agent.get, context, request.resource_meta)
+        return await asyncio.to_thread(agent.get, context=context, resource_meta=request.resource_meta)
 
     @agent_exception_handler
     async def DeleteTask(self, request: DeleteTaskRequest, context: grpc.ServicerContext) -> DeleteTaskResponse:
@@ -121,4 +120,4 @@ class AsyncAgentService(AsyncAgentServiceServicer):
         logger.info(f"{agent.task_type} agent start deleting the job")
         if agent.asynchronous:
             return await agent.async_delete(context=context, resource_meta=request.resource_meta)
-        return await asyncio.get_running_loop().run_in_executor(None, agent.delete, context, request.resource_meta)
+        return await asyncio.to_thread(agent.delete, context=context, resource_meta=request.resource_meta)
